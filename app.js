@@ -152,11 +152,11 @@ const moodConfig = {
 const musicConfig = {
     happy: {
         name: "愉悦旋律",
-        url: "https://assets.mixkit.co/active_storage/sfx/209/209-preview.mp3"
+        url: "https://assets.mixkit.co/active_storage/sfx/2515/2515-preview.mp3"
     },
     calm: {
         name: "舒缓白噪音",
-        url: "https://assets.mixkit.co/active_storage/sfx/3773/3773-preview.mp3"
+        url: "https://assets.mixkit.co/active_storage/sfx/3774/3774-preview.mp3"
     },
     melancholy: {
         name: "沉思时光",
