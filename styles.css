@@ -1162,19 +1162,54 @@ body {
     display: flex;
     justify-content: space-around;
     align-items: flex-end;
-    height: 100px;
-    padding: 0.5rem;
+    height: 110px;
+    padding: 0.75rem 0.5rem;
+    background: rgba(0, 0, 0, 0.02);
+    border-radius: var(--radius-lg);
 }
 
 .weekly-item {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.4rem;
+}
+
+.weekly-item.today-item .weekly-label {
+    font-weight: 600;
+    color: var(--sunny-accent);
 }
 
 .weekly-emoji {
-    font-size: 1.5rem;
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.6rem;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.6);
+    transition: transform 0.3s ease;
+}
+
+.weekly-emoji.mood-bg-sunny {
+    background: linear-gradient(135deg, rgba(254, 243, 199, 0.8), rgba(252, 211, 77, 0.6));
+}
+
+.weekly-emoji.mood-bg-cloudy {
+    background: linear-gradient(135deg, rgba(229, 231, 235, 0.8), rgba(209, 213, 219, 0.6));
+}
+
+.weekly-emoji.mood-bg-overcast {
+    background: linear-gradient(135deg, rgba(203, 213, 225, 0.8), rgba(148, 163, 184, 0.6));
+}
+
+.weekly-emoji.mood-bg-rainy {
+    background: linear-gradient(135deg, rgba(186, 230, 253, 0.8), rgba(125, 211, 252, 0.6));
+}
+
+.weekly-emoji.mood-bg-thunder {
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.6), rgba(79, 70, 229, 0.4));
 }
 
 .weekly-label {
@@ -1192,6 +1227,27 @@ body {
 
 .ai-summary.hidden {
     display: none;
+}
+
+.ai-summary p {
+    font-family: 'Noto Sans SC', sans-serif;
+    font-size: 0.9rem;
+    line-height: 1.8;
+    color: var(--text-dark);
+    margin: 0;
+}
+
+.ai-summary p:first-child {
+    font-weight: 600;
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+.ai-summary p:last-child {
+    margin-top: 0.75rem;
+    padding-top: 0.75rem;
+    border-top: 1px dashed rgba(0, 0, 0, 0.1);
+    color: var(--text-medium);
 }
 
 .ai-summary-header {
@@ -1212,13 +1268,6 @@ body {
     font-size: 1rem;
     font-weight: 600;
     color: var(--text-dark);
-}
-
-.ai-summary p {
-    font-family: 'Noto Serif SC', serif;
-    color: var(--text-dark);
-    line-height: 1.9;
-    font-size: 0.95rem;
 }
 
 .onboarding {

@@ -974,15 +974,17 @@ function renderWeeklyTrend(data) {
         const dateStr = date.toISOString().split('T')[0];
         const dayOfWeek = date.getDay();
         const mood = data[dateStr]?.mood || null;
-        weekData.push({ date: dateStr, day: weekDays[dayOfWeek], mood });
+        weekData.push({ date: dateStr, day: weekDays[dayOfWeek], mood, isToday: i === 0 });
     }
 
     weekData.forEach(day => {
         const item = document.createElement('div');
         item.className = 'weekly-item';
+        if (day.isToday) item.classList.add('today-item');
         const emoji = day.mood ? moodConfig[day.mood].emoji : '·';
+        const moodBg = day.mood ? `mood-bg-${day.mood}` : '';
         item.innerHTML = `
-            <span class="weekly-emoji">${emoji}</span>
+            <div class="weekly-emoji ${moodBg}">${emoji}</div>
             <span class="weekly-label">${day.day}</span>
         `;
         chart.appendChild(item);
@@ -991,39 +993,94 @@ function renderWeeklyTrend(data) {
 
 function checkAISummary() {
     const data = getMoodData();
+    const diaryData = getDiaryData();
     const sortedDates = Object.keys(data).sort();
     const recentDates = sortedDates.slice(-7);
 
-    if (recentDates.length >= 3) {
-        const aiSummary = document.getElementById('ai-summary');
-        const summaryText = document.getElementById('summary-text');
+    const aiSummary = document.getElementById('ai-summary');
+    const summaryText = document.getElementById('summary-text');
 
-        const moodLabels = {
-            sunny: '晴朗愉悦',
-            cloudy: '平静舒缓',
-            overcast: '有些低落',
-            rainy: '难受伤心',
-            thunder: '焦虑不安'
-        };
-
-        const recentMoods = recentDates.map(d => moodLabels[data[d].mood]).join('、');
-
-        let insight = '';
-        const sunnyCount = recentDates.filter(d => data[d].mood === 'sunny').length;
-        const rainyCount = recentDates.filter(d => data[d].mood === 'rainy' || data[d].mood === 'thunder').length;
-
-        if (sunnyCount >= 5) {
-            insight = '这周阳光满满，你的心情真棒！';
-        } else if (rainyCount >= 4) {
-            insight = '这周有些艰难，但请相信，风雨后会见彩虹。';
-        } else {
-            insight = '生活就像天气，有晴有雨，都是独特的风景。';
-        }
-
-        summaryText.textContent = `近7天，你的情绪如天气般变化：${recentMoods}。${insight}`;
-
-        aiSummary.classList.remove('hidden');
+    if (recentDates.length < 3) {
+        aiSummary.classList.add('hidden');
+        return;
     }
+
+    const moodLabels = {
+        sunny: '晴朗愉悦',
+        cloudy: '平静舒缓',
+        overcast: '有些低落',
+        rainy: '难受伤心',
+        thunder: '焦虑不安'
+    };
+
+    const moodEmojis = {
+        sunny: '☀️',
+        cloudy: '⛅',
+        overcast: '☁️',
+        rainy: '🌧️',
+        thunder: '⛈️'
+    };
+
+    const moodDescriptions = {
+        sunny: ['阳光明媚', '心情灿烂', '元气满满'],
+        cloudy: ['云淡风轻', '宁静平和', '岁月静好'],
+        overcast: ['有些阴郁', '需要调节', '稍显低落'],
+        rainy: ['有些伤感', '需要关爱', '情绪低落'],
+        thunder: ['压力较大', '需要放松', '有点焦虑']
+    };
+
+    const sunnyCount = recentDates.filter(d => data[d].mood === 'sunny').length;
+    const cloudyCount = recentDates.filter(d => data[d].mood === 'cloudy').length;
+    const rainyCount = recentDates.filter(d => data[d].mood === 'rainy' || data[d].mood === 'thunder').length;
+    const totalDays = recentDates.length;
+
+    let summaryParts = [];
+    let moodTrend = '';
+    let overallMood = '';
+
+    const sunnyRatio = sunnyCount / totalDays;
+    const rainyRatio = rainyCount / totalDays;
+
+    if (sunnyRatio >= 0.6) {
+        overallMood = '阳光灿烂';
+        moodTrend = '这周的你像阳光一样明媚耀眼！继续保持这份好心情。';
+    } else if (sunnyRatio >= 0.4) {
+        overallMood = '平稳向上';
+        moodTrend = '这周心情整体平稳，偶尔有波动也是正常的。';
+    } else if (rainyRatio >= 0.5) {
+        overallMood = '需要关怀';
+        moodTrend = '这周对你来说不太容易，记得给自己一些时间和空间。';
+    } else {
+        overallMood = '波动中前进';
+        moodTrend = '生活总有起起落落，这周的你正在努力前行。';
+    }
+
+    const moodCounts = {};
+    recentDates.forEach(d => {
+        const m = data[d].mood;
+        moodCounts[m] = (moodCounts[m] || 0) + 1;
+    });
+    const dominantMood = Object.entries(moodCounts).sort((a, b) => b[1] - a[1])[0][0];
+
+    summaryParts.push(`📊 本周共记录 ${totalDays} 天`);
+    summaryParts.push(`${moodEmojis[dominantMood]} 主导心情：${moodLabels[dominantMood]}`);
+
+    if (sunnyCount > 0) {
+        const randomDesc = moodDescriptions.sunny[Math.floor(Math.random() * moodDescriptions.sunny.length)];
+        summaryParts.push(`☀️ 有 ${sunnyCount} 天阳光灿烂 - ${randomDesc}`);
+    }
+    if (cloudyCount > 0) {
+        summaryParts.push(`⛅ 有 ${cloudyCount} 天平静安宁`);
+    }
+    if (rainyCount > 0) {
+        const randomDesc = moodDescriptions.rainy[Math.floor(Math.random() * moodDescriptions.rainy.length)];
+        summaryParts.push(`🌧️ 有 ${rainyCount} 天需要关怀 - ${randomDesc}`);
+    }
+
+    summaryParts.push(`\n💡 ${moodTrend}`);
+
+    summaryText.innerHTML = summaryParts.map(p => `<p>${p}</p>`).join('');
+    aiSummary.classList.remove('hidden');
 }
 
 function checkOnboarding() {
