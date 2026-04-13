@@ -265,7 +265,29 @@
                 </button>
                 <h2>心情日历</h2>
             </div>
-            <div class="calendar-container">
+
+            <div class="calendar-controls">
+                <div class="view-toggle">
+                    <button class="view-btn active" data-view="month">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="4" width="18" height="18" rx="2"/>
+                            <line x1="3" y1="10" x2="21" y2="10"/>
+                        </svg>
+                        月
+                    </button>
+                    <button class="view-btn" data-view="week">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="3" y1="6" x2="21" y2="6"/>
+                            <line x1="3" y1="12" x2="21" y2="12"/>
+                            <line x1="3" y1="18" x2="21" y2="18"/>
+                        </svg>
+                        周
+                    </button>
+                </div>
+                <button id="go-today" class="today-btn">今天</button>
+            </div>
+
+            <div class="calendar-container" id="month-view">
                 <div class="calendar-header">
                     <button id="prev-month" class="month-nav">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -291,6 +313,38 @@
                     <div class="legend-item"><span class="legend-dot thunder"></span>焦虑</div>
                 </div>
             </div>
+
+            <div class="week-view hidden" id="week-view">
+                <div class="week-header">
+                    <button id="prev-week" class="week-nav">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="15 18 9 12 15 6"/>
+                        </svg>
+                    </button>
+                    <h3 id="current-week-range"></h3>
+                    <button id="next-week" class="week-nav">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="9 18 15 12 9 6"/>
+                        </svg>
+                    </button>
+                </div>
+                <div id="week-grid" class="week-grid"></div>
+            </div>
+
+            <div id="month-insights" class="month-insights hidden">
+                <div class="insight-card">
+                    <div class="insight-header">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"/>
+                            <line x1="12" y1="16" x2="12" y2="12"/>
+                            <line x1="12" y1="8" x2="12.01" y2="8"/>
+                        </svg>
+                        <h3>本月小结</h3>
+                    </div>
+                    <div id="insight-content" class="insight-content"></div>
+                </div>
+            </div>
+
             <div id="day-detail" class="day-detail hidden">
                 <div class="day-detail-card">
                     <button class="detail-close" data-close="true">
@@ -305,6 +359,51 @@
                         <span id="detail-mood-text" class="detail-mood-text"></span>
                     </div>
                     <p id="detail-message" class="detail-message"></p>
+                    <div class="detail-actions">
+                        <button id="edit-mood-btn" class="action-btn">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                            </svg>
+                            修改
+                        </button>
+                        <button id="delete-mood-btn" class="action-btn delete">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="3 6 5 6 21 6"/>
+                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                            </svg>
+                            删除
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="mood-picker" class="mood-picker hidden">
+                <div class="mood-picker-card">
+                    <h4>修改心情</h4>
+                    <div class="mood-picker-grid">
+                        <button class="mood-pick-btn" data-mood="sunny">
+                            <span class="pick-emoji">☀️</span>
+                            <span class="pick-label">晴</span>
+                        </button>
+                        <button class="mood-pick-btn" data-mood="cloudy">
+                            <span class="pick-emoji">⛅</span>
+                            <span class="pick-label">多云</span>
+                        </button>
+                        <button class="mood-pick-btn" data-mood="overcast">
+                            <span class="pick-emoji">☁️</span>
+                            <span class="pick-label">阴</span>
+                        </button>
+                        <button class="mood-pick-btn" data-mood="rainy">
+                            <span class="pick-emoji">🌧️</span>
+                            <span class="pick-label">雨</span>
+                        </button>
+                        <button class="mood-pick-btn" data-mood="thunder">
+                            <span class="pick-emoji">⛈️</span>
+                            <span class="pick-label">雷雨</span>
+                        </button>
+                    </div>
+                    <button class="picker-cancel" data-close="true">取消</button>
                 </div>
             </div>
         </section>

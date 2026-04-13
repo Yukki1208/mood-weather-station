@@ -158,7 +158,32 @@ const greetingMessages = {
 
 let currentMood = null;
 let viewedMonth = new Date();
+let viewedWeekStart = getWeekStart(new Date());
 let onboardingStep = 1;
+let currentDetailDate = null;
+let calendarView = 'month';
+
+function getWeekStart(date) {
+    const d = new Date(date);
+    const day = d.getDay();
+    const diff = d.getDate() - day;
+    return new Date(d.setDate(diff));
+}
+
+function formatDateRange(startDate) {
+    const endDate = new Date(startDate);
+    endDate.setDate(endDate.getDate() + 6);
+    const startMonth = startDate.getMonth() + 1;
+    const endMonth = endDate.getMonth() + 1;
+    const startDay = startDate.getDate();
+    const endDay = endDate.getDate();
+
+    if (startMonth === endMonth) {
+        return `${startDate.getFullYear()}年${startMonth}月${startDay}-${endDay}日`;
+    } else {
+        return `${startDate.getFullYear()}年${startMonth}/${endMonth}月${startDay}-${endDay}日`;
+    }
+}
 
 function init() {
     loadMoodData();
@@ -232,17 +257,46 @@ function setupEventListeners() {
     document.getElementById('prev-month').addEventListener('click', () => {
         viewedMonth.setMonth(viewedMonth.getMonth() - 1);
         renderCalendar();
+        renderMonthInsights();
     });
 
     document.getElementById('next-month').addEventListener('click', () => {
         viewedMonth.setMonth(viewedMonth.getMonth() + 1);
         renderCalendar();
+        renderMonthInsights();
     });
 
     document.querySelectorAll('.detail-close, .onboarding-close').forEach(btn => {
         btn.addEventListener('click', () => {
-            btn.closest('.day-detail, .onboarding').classList.add('hidden');
+            btn.closest('.day-detail, .onboarding, .mood-picker').classList.add('hidden');
         });
+    });
+
+    document.querySelectorAll('.view-btn').forEach(btn => {
+        btn.addEventListener('click', () => switchCalendarView(btn.dataset.view));
+    });
+
+    document.getElementById('go-today').addEventListener('click', goToToday);
+
+    document.getElementById('prev-week').addEventListener('click', () => {
+        viewedWeekStart.setDate(viewedWeekStart.getDate() - 7);
+        renderWeekView();
+    });
+
+    document.getElementById('next-week').addEventListener('click', () => {
+        viewedWeekStart.setDate(viewedWeekStart.getDate() + 7);
+        renderWeekView();
+    });
+
+    document.getElementById('edit-mood-btn')?.addEventListener('click', () => {
+        document.getElementById('day-detail').classList.add('hidden');
+        document.getElementById('mood-picker').classList.remove('hidden');
+    });
+
+    document.getElementById('delete-mood-btn')?.addEventListener('click', deleteCurrentMood);
+
+    document.querySelectorAll('.mood-pick-btn').forEach(btn => {
+        btn.addEventListener('click', () => updateMoodFromPicker(btn.dataset.mood));
     });
 
     document.getElementById('onboarding-next')?.addEventListener('click', handleOnboardingNext);
@@ -456,13 +510,14 @@ function renderCalendar() {
     const today = new Date();
     const todayStr = today.toISOString().split('T')[0];
 
+    const data = getMoodData();
+    const streakInfo = calculateStreaks(data, year, month);
+
     for (let i = 0; i < firstDay; i++) {
         const empty = document.createElement('div');
         empty.className = 'calendar-day empty';
         grid.appendChild(empty);
     }
-
-    const data = getMoodData();
 
     for (let day = 1; day <= daysInMonth; day++) {
         const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
@@ -473,19 +528,153 @@ function renderCalendar() {
             dayEl.classList.add('today');
         }
 
+        if (streakInfo.streakDays.includes(dateStr)) {
+            dayEl.classList.add('streak-highlight');
+            const dayOfWeek = new Date(dateStr).getDay();
+            if (streakInfo.streakStartDays.includes(dateStr)) {
+                dayEl.classList.add('streak-start');
+            }
+            if (streakInfo.streakEndDays.includes(dateStr) || day === daysInMonth) {
+                dayEl.classList.add('streak-end');
+            }
+        }
+
         if (data[dateStr]) {
             dayEl.classList.add('has-mood');
             const dot = document.createElement('div');
             dot.className = `mood-dot ${data[dateStr].mood}`;
             dayEl.appendChild(dot);
             dayEl.addEventListener('click', () => showDayDetail(dateStr, data[dateStr].mood, data[dateStr].message));
+        } else {
+            dayEl.addEventListener('click', () => selectMoodForDate(dateStr));
         }
 
         grid.appendChild(dayEl);
     }
+
+    renderMonthInsights();
+}
+
+function calculateStreaks(data, year, month) {
+    const streakDays = [];
+    const streakStartDays = [];
+    const streakEndDays = [];
+    let inStreak = false;
+    let streakCount = 0;
+
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+    for (let day = 1; day <= daysInMonth; day++) {
+        const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        const mood = data[dateStr]?.mood;
+
+        if (mood === 'sunny') {
+            streakCount++;
+            streakDays.push(dateStr);
+            if (!inStreak) {
+                streakStartDays.push(dateStr);
+                inStreak = true;
+            }
+        } else {
+            if (inStreak && streakCount >= 3) {
+                streakEndDays.push(new Date(dateStr).setDate(new Date(dateStr).getDate() - 1).toISOString().split('T')[0]);
+            }
+            inStreak = false;
+            streakCount = 0;
+        }
+    }
+
+    if (inStreak && streakCount >= 3) {
+        const lastDay = `${year}-${String(month + 1).padStart(2, '0')}-${String(daysInMonth).padStart(2, '0')}`;
+        streakEndDays.push(lastDay);
+    }
+
+    return { streakDays, streakStartDays, streakEndDays };
+}
+
+function renderMonthInsights() {
+    const insightsEl = document.getElementById('month-insights');
+    const contentEl = document.getElementById('insight-content');
+    const data = getMoodData();
+    const year = viewedMonth.getFullYear();
+    const month = viewedMonth.getMonth();
+    const monthNames = ['一月', '二月', '三月', '四月', '五月', '六月',
+                         '七月', '八月', '九月', '十月', '十一月', '十二月'];
+
+    let monthData = [];
+    let totalDays = 0;
+    const moodCounts = { sunny: 0, cloudy: 0, overcast: 0, rainy: 0, thunder: 0 };
+    let dominantMood = null;
+    let maxCount = 0;
+
+    for (const dateStr in data) {
+        const date = new Date(dateStr);
+        if (date.getFullYear() === year && date.getMonth() === month) {
+            monthData.push(dateStr);
+            const mood = data[dateStr].mood;
+            moodCounts[mood]++;
+            totalDays++;
+            if (moodCounts[mood] > maxCount) {
+                maxCount = moodCounts[mood];
+                dominantMood = mood;
+            }
+        }
+    }
+
+    if (totalDays === 0) {
+        insightsEl.classList.add('hidden');
+        return;
+    }
+
+    insightsEl.classList.remove('hidden');
+    const insights = [];
+
+    insights.push({
+        icon: '📅',
+        text: `${year}年${monthNames[month]}，你记录了 <strong>${totalDays} 天</strong>的心情`
+    });
+
+    if (dominantMood) {
+        const moodLabels = { sunny: '晴朗愉悦', cloudy: '平静舒缓', overcast: '有些低落', rainy: '难受伤心', thunder: '焦虑不安' };
+        const moodEmojis = { sunny: '☀️', cloudy: '⛅', overcast: '☁️', rainy: '🌧️', thunder: '⛈️' };
+        insights.push({
+            icon: moodEmojis[dominantMood],
+            text: `最常出现的心情是 <strong>${moodLabels[dominantMood]}</strong>（${maxCount}天）`
+        });
+    }
+
+    const sunnyDays = moodCounts.sunny;
+    if (sunnyDays >= 5) {
+        insights.push({
+            icon: '☀️',
+            text: `有 <strong>${sunnyDays} 天</strong>阳光满满，继续保持！`
+        });
+    }
+
+    const rainyDays = moodCounts.rainy + moodCounts.thunder;
+    if (rainyDays >= 3) {
+        insights.push({
+            icon: '🌈',
+            text: `这几天有些难过，记得给自己一些时间`
+        });
+    }
+
+    const moodIndex = calculateMoodIndex(moodCounts, totalDays);
+    insights.push({
+        icon: '💙',
+        text: `心情指数：<strong>${moodIndex}%</strong>`
+    });
+
+    contentEl.innerHTML = insights.map(item => `
+        <div class="insight-item">
+            <span class="insight-icon">${item.icon}</span>
+            <span class="insight-text">${item.text}</span>
+        </div>
+    `).join('');
 }
 
 function showDayDetail(dateStr, mood, message) {
+    currentDetailDate = dateStr;
     const detail = document.getElementById('day-detail');
     const moodEl = document.getElementById('detail-mood');
     const moodTextEl = document.getElementById('detail-mood-text');
@@ -498,6 +687,139 @@ function showDayDetail(dateStr, mood, message) {
     messageEl.textContent = message || messages[mood].common[0];
 
     detail.classList.remove('hidden');
+}
+
+function selectMoodForDate(dateStr) {
+    currentDetailDate = dateStr;
+    document.getElementById('mood-picker').classList.remove('hidden');
+}
+
+function updateMoodFromPicker(mood) {
+    if (!currentDetailDate) return;
+
+    const period = getTimePeriod();
+    const moodMessages = messages[mood];
+    let selectedMessages = moodMessages.common;
+    if (moodMessages[period]) {
+        selectedMessages = [...moodMessages[period], ...moodMessages.common];
+    }
+    const randomMessage = selectedMessages[Math.floor(Math.random() * selectedMessages.length)];
+
+    const data = getMoodData();
+    data[currentDetailDate] = {
+        mood,
+        message: randomMessage,
+        timestamp: Date.now(),
+        hour: new Date().getHours()
+    };
+    saveMoodData(data);
+
+    document.getElementById('mood-picker').classList.add('hidden');
+    document.getElementById('day-detail').classList.add('hidden');
+
+    renderCalendar();
+    renderStats();
+}
+
+function deleteCurrentMood() {
+    if (!currentDetailDate) return;
+
+    const data = getMoodData();
+    delete data[currentDetailDate];
+    saveMoodData(data);
+
+    document.getElementById('day-detail').classList.add('hidden');
+    currentDetailDate = null;
+
+    renderCalendar();
+    renderStats();
+}
+
+function switchCalendarView(view) {
+    calendarView = view;
+
+    document.querySelectorAll('.view-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.view === view);
+    });
+
+    const monthView = document.getElementById('month-view');
+    const weekView = document.getElementById('week-view');
+
+    if (view === 'month') {
+        monthView.classList.remove('hidden');
+        weekView.classList.add('hidden');
+        renderCalendar();
+    } else {
+        monthView.classList.add('hidden');
+        weekView.classList.remove('hidden');
+        renderWeekView();
+    }
+}
+
+function goToToday() {
+    viewedMonth = new Date();
+    viewedWeekStart = getWeekStart(new Date());
+
+    if (calendarView === 'month') {
+        renderCalendar();
+    } else {
+        renderWeekView();
+    }
+}
+
+function renderWeekView() {
+    const grid = document.getElementById('week-grid');
+    const rangeEl = document.getElementById('current-week-range');
+    grid.innerHTML = '';
+
+    rangeEl.textContent = formatDateRange(viewedWeekStart);
+
+    const weekDays = ['日', '一', '二', '三', '四', '五', '六'];
+    const today = new Date();
+    const todayStr = today.toISOString().split('T')[0];
+    const data = getMoodData();
+
+    for (let i = 0; i < 7; i++) {
+        const date = new Date(viewedWeekStart);
+        date.setDate(date.getDate() + i);
+        const dateStr = date.toISOString().split('T')[0];
+        const dayOfWeek = date.getDay();
+
+        const dayEl = document.createElement('div');
+        dayEl.className = 'week-day';
+
+        if (dateStr === todayStr) {
+            dayEl.classList.add('today');
+        }
+
+        const dayName = document.createElement('span');
+        dayName.className = 'week-day-name';
+        dayName.textContent = weekDays[dayOfWeek];
+        dayEl.appendChild(dayName);
+
+        const dayDate = document.createElement('span');
+        dayDate.className = 'week-day-date';
+        dayDate.textContent = date.getDate();
+        dayEl.appendChild(dayDate);
+
+        if (data[dateStr]) {
+            dayEl.classList.add('has-mood');
+            const dayEmoji = document.createElement('span');
+            dayEmoji.className = 'week-day-emoji';
+            dayEmoji.textContent = moodConfig[data[dateStr].mood].emoji;
+            dayEl.appendChild(dayEmoji);
+            dayEl.addEventListener('click', () => showDayDetail(dateStr, data[dateStr].mood, data[dateStr].message));
+        } else {
+            const emptyEmoji = document.createElement('span');
+            emptyEmoji.className = 'week-day-emoji';
+            emptyEmoji.textContent = '·';
+            emptyEmoji.style.opacity = '0.3';
+            dayEl.appendChild(emptyEmoji);
+            dayEl.addEventListener('click', () => selectMoodForDate(dateStr));
+        }
+
+        grid.appendChild(dayEl);
+    }
 }
 
 function renderStats() {
