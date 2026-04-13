@@ -516,6 +516,10 @@ function renderCalendar() {
     for (let i = 0; i < firstDay; i++) {
         const empty = document.createElement('div');
         empty.className = 'calendar-day empty';
+        const dayNum = document.createElement('span');
+        dayNum.className = 'day-number';
+        dayNum.textContent = '';
+        empty.appendChild(dayNum);
         grid.appendChild(empty);
     }
 
@@ -524,26 +528,30 @@ function renderCalendar() {
         const dayEl = document.createElement('div');
         dayEl.className = 'calendar-day';
 
+        const dayNum = document.createElement('span');
+        dayNum.className = 'day-number';
+        dayNum.textContent = day;
+
+        const dayOfWeek = new Date(dateStr).getDay();
+        if (dayOfWeek === 0) dayNum.classList.add('sunday');
+        if (dayOfWeek === 6) dayNum.classList.add('saturday');
+
+        dayEl.appendChild(dayNum);
+
         if (dateStr === todayStr) {
             dayEl.classList.add('today');
         }
 
         if (streakInfo.streakDays.includes(dateStr)) {
             dayEl.classList.add('streak-highlight');
-            const dayOfWeek = new Date(dateStr).getDay();
-            if (streakInfo.streakStartDays.includes(dateStr)) {
-                dayEl.classList.add('streak-start');
-            }
-            if (streakInfo.streakEndDays.includes(dateStr) || day === daysInMonth) {
-                dayEl.classList.add('streak-end');
-            }
         }
 
         if (data[dateStr]) {
             dayEl.classList.add('has-mood');
-            const dot = document.createElement('div');
-            dot.className = `mood-dot ${data[dateStr].mood}`;
-            dayEl.appendChild(dot);
+            const moodEmoji = document.createElement('span');
+            moodEmoji.className = 'mood-emoji';
+            moodEmoji.textContent = moodConfig[data[dateStr].mood].emoji;
+            dayEl.appendChild(moodEmoji);
             dayEl.addEventListener('click', () => showDayDetail(dateStr, data[dateStr].mood, data[dateStr].message));
         } else {
             dayEl.addEventListener('click', () => selectMoodForDate(dateStr));
