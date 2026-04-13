@@ -142,12 +142,39 @@ const messages = {
 };
 
 const moodConfig = {
-    sunny: { emoji: "☀️", label: "晴", emotion: "愉悦", color: "#FFD93D" },
-    cloudy: { emoji: "⛅", label: "多云", emotion: "平静", color: "#94A3B8" },
-    overcast: { emoji: "☁️", label: "阴", emotion: "低落", color: "#64748B" },
-    rainy: { emoji: "🌧️", label: "雨", emotion: "难过", color: "#38BDF8" },
-    thunder: { emoji: "⛈️", label: "雷雨", emotion: "焦虑", color: "#6366F1" }
+    sunny: { emoji: "☀️", label: "晴", emotion: "愉悦", color: "#FFD93D", music: "happy" },
+    cloudy: { emoji: "⛅", label: "多云", emotion: "平静", color: "#94A3B8", music: "calm" },
+    overcast: { emoji: "☁️", label: "阴", emotion: "低落", color: "#64748B", music: "melancholy" },
+    rainy: { emoji: "🌧️", label: "雨", emotion: "难过", color: "#38BDF8", music: "sad" },
+    thunder: { emoji: "⛈️", label: "雷雨", emotion: "焦虑", color: "#6366F1", music: "sorrow" }
 };
+
+const musicConfig = {
+    happy: {
+        name: "愉悦旋律",
+        url: "https://assets.mixkit.co/active_storage/sfx/2515/2515-preview.mp3"
+    },
+    calm: {
+        name: "平静之音",
+        url: "https://assets.mixkit.co/active_storage/sfx/123/123-preview.mp3"
+    },
+    melancholy: {
+        name: "沉思时光",
+        url: "https://assets.mixkit.co/active_storage/sfx/452/452-preview.mp3"
+    },
+    sad: {
+        name: "忧郁雨声",
+        url: "https://assets.mixkit.co/active_storage/sfx/2394/2394-preview.mp3"
+    },
+    sorrow: {
+        name: "悲伤雨夜",
+        url: "https://assets.mixkit.co/active_storage/sfx/2391/2391-preview.mp3"
+    }
+};
+
+let audioElement = null;
+let isPlaying = false;
+let currentMusicMood = null;
 
 const greetingMessages = {
     morning: ["早安", "新的一天开始了", "今天天气不错", "早晨的空气真好"],
@@ -322,6 +349,106 @@ function setupEventListeners() {
             btn.closest('.diary-section, .diary-view').classList.add('hidden');
         });
     });
+
+    const musicToggle = document.getElementById('music-toggle');
+    const audioPlay = document.getElementById('audio-play');
+    const audioVolume = document.getElementById('audio-volume');
+    const audioClose = document.getElementById('audio-close');
+
+    audioElement = document.getElementById('ambient-audio');
+    audioElement.volume = 0.5;
+
+    musicToggle?.addEventListener('click', toggleMusic);
+    audioPlay?.addEventListener('click', toggleMusicPlay);
+    audioVolume?.addEventListener('input', (e) => {
+        if (audioElement) audioElement.volume = e.target.value / 100;
+    });
+    audioClose?.addEventListener('click', closeMusicPlayer);
+}
+
+function playMoodMusic(mood) {
+    const musicType = moodConfig[mood]?.music;
+    if (!musicType || !musicConfig[musicType]) return;
+
+    const music = musicConfig[musicType];
+    if (!audioElement) return;
+
+    audioElement.src = music.url;
+    audioElement.loop = true;
+
+    const audioPlayer = document.getElementById('audio-player');
+    const audioMood = document.getElementById('audio-mood');
+    const musicToggle = document.getElementById('music-toggle');
+
+    if (audioMood) audioMood.textContent = music.name;
+    if (audioPlayer) audioPlayer.classList.remove('hidden');
+    if (musicToggle) musicToggle.classList.add('playing');
+
+    audioElement.play().then(() => {
+        isPlaying = true;
+        updatePlayButton();
+    }).catch(err => {
+        console.log('音频播放需要用户交互');
+    });
+
+    currentMusicMood = mood;
+}
+
+function toggleMusic() {
+    if (!audioElement) return;
+
+    if (!audioElement.src || audioElement.src === '') {
+        if (currentMood) {
+            playMoodMusic(currentMood);
+        }
+        return;
+    }
+
+    if (isPlaying) {
+        audioElement.pause();
+        isPlaying = false;
+    } else {
+        audioElement.play();
+        isPlaying = true;
+    }
+    updatePlayButton();
+}
+
+function toggleMusicPlay() {
+    toggleMusic();
+}
+
+function updatePlayButton() {
+    const playBtn = document.getElementById('audio-play');
+    const statusEl = document.getElementById('audio-status');
+
+    if (playBtn) {
+        if (isPlaying) {
+            playBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>';
+            playBtn.classList.add('playing');
+        } else {
+            playBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>';
+            playBtn.classList.remove('playing');
+        }
+    }
+
+    if (statusEl) {
+        statusEl.textContent = isPlaying ? '播放中' : '已暂停';
+    }
+}
+
+function closeMusicPlayer() {
+    if (audioElement) {
+        audioElement.pause();
+        audioElement.src = '';
+    }
+    isPlaying = false;
+
+    const audioPlayer = document.getElementById('audio-player');
+    const musicToggle = document.getElementById('music-toggle');
+
+    if (audioPlayer) audioPlayer.classList.add('hidden');
+    if (musicToggle) musicToggle.classList.remove('playing');
 }
 
 function selectMood(mood) {
@@ -355,6 +482,7 @@ function selectMood(mood) {
 
     updateAtmosphere(mood);
     showMessage(randomMessage);
+    playMoodMusic(mood);
     showTodaySummary(mood, today);
 
     const greetingText = document.getElementById('greeting-text');
