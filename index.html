@@ -219,6 +219,63 @@
                             记录于 <span id="summary-hour"></span>
                         </div>
                     </div>
+                    <button id="write-diary-btn" class="diary-btn">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                            <polyline points="14 2 14 8 20 8"/>
+                            <line x1="16" y1="13" x2="8" y2="13"/>
+                            <line x1="16" y1="17" x2="8" y2="17"/>
+                            <polyline points="10 9 9 9 8 9"/>
+                        </svg>
+                        写日记
+                    </button>
+                </div>
+            </section>
+
+            <section id="diary-section" class="diary-section hidden">
+                <div class="diary-card">
+                    <div class="diary-header">
+                        <h3>今日日记</h3>
+                        <button class="diary-close" data-close="true">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="18" y1="6" x2="6" y2="18"/>
+                                <line x1="6" y1="6" x2="18" y2="18"/>
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="diary-date" id="diary-date"></div>
+                    <textarea id="diary-input" class="diary-input" placeholder="今天发生了什么？记录一下此刻的心情..."></textarea>
+                    <div class="diary-hints">
+                        <span class="hint-item">💡 写下今天的小确幸</span>
+                        <span class="hint-item">📝 或任何想记录的事</span>
+                    </div>
+                    <button id="save-diary-btn" class="save-diary-btn">保存日记</button>
+                </div>
+            </section>
+
+            <section id="diary-view" class="diary-view hidden">
+                <div class="diary-view-card">
+                    <div class="diary-header">
+                        <h3>日记详情</h3>
+                        <button class="diary-close" data-close="true">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="18" y1="6" x2="6" y2="18"/>
+                                <line x1="6" y1="6" x2="18" y2="18"/>
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="diary-view-date" id="view-diary-date"></div>
+                    <div class="diary-view-mood" id="view-diary-mood"></div>
+                    <div class="diary-view-content" id="view-diary-content"></div>
+                    <div class="diary-view-actions">
+                        <button id="edit-diary-btn" class="action-btn">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                            </svg>
+                            编辑
+                        </button>
+                    </div>
                 </div>
             </section>
         </main>
@@ -360,6 +417,13 @@
                     </div>
                     <p id="detail-message" class="detail-message"></p>
                     <div class="detail-actions">
+                        <button id="view-diary-from-detail" class="action-btn">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                                <polyline points="14 2 14 8 20 8"/>
+                            </svg>
+                            日记
+                        </button>
                         <button id="edit-mood-btn" class="action-btn">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>

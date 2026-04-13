@@ -241,6 +241,17 @@ function saveMoodData(data) {
     localStorage.setItem('moodData_v2', JSON.stringify(data));
 }
 
+function getDiaryData() {
+    const stored = localStorage.getItem('diaryData_v1');
+    return stored ? JSON.parse(stored) : {};
+}
+
+function saveDiaryData(data) {
+    localStorage.setItem('diaryData_v1', JSON.stringify(data));
+}
+
+let currentDiaryDate = null;
+
 function setupEventListeners() {
     document.querySelectorAll('.mood-btn').forEach(btn => {
         btn.addEventListener('click', () => selectMood(btn.dataset.mood));
@@ -300,6 +311,17 @@ function setupEventListeners() {
     });
 
     document.getElementById('onboarding-next')?.addEventListener('click', handleOnboardingNext);
+
+    document.getElementById('write-diary-btn')?.addEventListener('click', openDiaryEditor);
+    document.getElementById('save-diary-btn')?.addEventListener('click', saveDiary);
+    document.getElementById('edit-diary-btn')?.addEventListener('click', openDiaryEditor);
+    document.getElementById('view-diary-from-detail')?.addEventListener('click', viewDiaryFromDetail);
+
+    document.querySelectorAll('.diary-close').forEach(btn => {
+        btn.addEventListener('click', () => {
+            btn.closest('.diary-section, .diary-view').classList.add('hidden');
+        });
+    });
 }
 
 function selectMood(mood) {
@@ -1026,6 +1048,92 @@ function handleOnboardingNext() {
         localStorage.setItem('hasOnboarded_v2', 'true');
         document.getElementById('onboarding').classList.add('hidden');
     }
+}
+
+function openDiaryEditor() {
+    const today = new Date().toISOString().split('T')[0];
+    currentDiaryDate = today;
+
+    const diarySection = document.getElementById('diary-section');
+    const diaryView = document.getElementById('diary-view');
+    const diaryInput = document.getElementById('diary-input');
+    const diaryDate = document.getElementById('diary-date');
+
+    diaryView.classList.add('hidden');
+    diarySection.classList.remove('hidden');
+
+    const diaryData = getDiaryData();
+    diaryDate.textContent = formatDisplayDate(today);
+
+    if (diaryData[today]) {
+        diaryInput.value = diaryData[today].content;
+    } else {
+        diaryInput.value = '';
+    }
+
+    diaryInput.focus();
+}
+
+function viewDiaryFromDetail() {
+    const dateStr = currentDetailDate;
+    if (!dateStr) return;
+
+    currentDiaryDate = dateStr;
+    const diaryData = getDiaryData();
+
+    const diarySection = document.getElementById('diary-section');
+    const diaryView = document.getElementById('diary-view');
+    const viewContent = document.getElementById('view-diary-content');
+    const viewDate = document.getElementById('view-diary-date');
+    const viewMood = document.getElementById('view-diary-mood');
+
+    const moodData = getMoodData()[dateStr];
+
+    diarySection.classList.add('hidden');
+    diaryView.classList.remove('hidden');
+
+    viewDate.textContent = formatDisplayDate(dateStr);
+
+    if (moodData) {
+        viewMood.textContent = moodConfig[moodData.mood].emoji + ' ' + moodConfig[moodData.mood].emotion;
+    } else {
+        viewMood.textContent = '';
+    }
+
+    if (diaryData[dateStr]) {
+        viewContent.textContent = diaryData[dateStr].content || '（暂无日记内容）';
+    } else {
+        viewContent.textContent = '（暂无日记内容）';
+    }
+}
+
+function saveDiary() {
+    if (!currentDiaryDate) return;
+
+    const diaryInput = document.getElementById('diary-input');
+    const content = diaryInput.value.trim();
+
+    const data = getDiaryData();
+    data[currentDiaryDate] = {
+        content,
+        timestamp: Date.now()
+    };
+    saveDiaryData(data);
+
+    document.getElementById('diary-section').classList.add('hidden');
+
+    if (currentDetailDate) {
+        viewDiaryFromDetail();
+    }
+}
+
+function formatDisplayDate(dateStr) {
+    const date = new Date(dateStr);
+    const month = date.getMonth() + 1;
+    const day = date.getDate();
+    const weekdays = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
+    const weekday = weekdays[date.getDay()];
+    return `${month}月${day}日 ${weekday}`;
 }
 
 function createParticles() {
