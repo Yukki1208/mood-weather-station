@@ -702,15 +702,74 @@ function renderCalendar() {
             moodEmoji.className = 'mood-emoji';
             moodEmoji.textContent = moodConfig[data[dateStr].mood].emoji;
             dayEl.appendChild(moodEmoji);
-            dayEl.addEventListener('click', () => showDayDetail(dateStr, data[dateStr].mood, data[dateStr].message));
-        } else {
-            dayEl.addEventListener('click', () => selectMoodForDate(dateStr));
         }
+        dayEl.addEventListener('click', () => handleCalendarDayClick(dateStr));
 
         grid.appendChild(dayEl);
     }
 
     renderMonthInsights();
+}
+
+function handleCalendarDayClick(dateStr) {
+    const moodData = getMoodData();
+    const diaryData = getDiaryData();
+
+    if (moodData[dateStr] || diaryData[dateStr]) {
+        if (moodData[dateStr]) {
+            showDayDetailWithDiary(dateStr, moodData[dateStr].mood, moodData[dateStr].message);
+        } else {
+            showDiaryOnly(dateStr);
+        }
+    } else {
+        selectMoodForDate(dateStr);
+    }
+}
+
+function showDiaryOnly(dateStr) {
+    currentDetailDate = dateStr;
+    const diaryData = getDiaryData();
+    const detail = document.getElementById('day-detail');
+    const moodEl = document.getElementById('detail-mood');
+    const moodTextEl = document.getElementById('detail-mood-text');
+    const messageEl = document.getElementById('detail-message');
+    const dateEl = document.getElementById('detail-date');
+
+    dateEl.textContent = dateStr;
+    moodEl.textContent = '📝';
+    moodTextEl.textContent = '仅日记';
+    messageEl.textContent = diaryData[dateStr]?.content || '（暂无内容）';
+
+    const diaryBtn = document.getElementById('view-diary-from-detail');
+    if (diaryBtn) diaryBtn.style.display = 'none';
+
+    detail.classList.remove('hidden');
+}
+
+function showDayDetailWithDiary(dateStr, mood, message) {
+    currentDetailDate = dateStr;
+    const detail = document.getElementById('day-detail');
+    const moodEl = document.getElementById('detail-mood');
+    const moodTextEl = document.getElementById('detail-mood-text');
+    const messageEl = document.getElementById('detail-message');
+    const dateEl = document.getElementById('detail-date');
+
+    dateEl.textContent = dateStr;
+    moodEl.textContent = moodConfig[mood].emoji;
+    moodTextEl.textContent = moodConfig[mood].emotion;
+    messageEl.textContent = message || messages[mood].common[0];
+
+    const diaryData = getDiaryData();
+    const diaryBtn = document.getElementById('view-diary-from-detail');
+    if (diaryBtn) {
+        if (diaryData[dateStr] && diaryData[dateStr].content) {
+            diaryBtn.style.display = 'flex';
+        } else {
+            diaryBtn.style.display = 'none';
+        }
+    }
+
+    detail.classList.remove('hidden');
 }
 
 function calculateStreaks(data, year, month) {
@@ -843,6 +902,16 @@ function showDayDetail(dateStr, mood, message) {
     moodEl.textContent = moodConfig[mood].emoji;
     moodTextEl.textContent = moodConfig[mood].emotion;
     messageEl.textContent = message || messages[mood].common[0];
+
+    const diaryData = getDiaryData();
+    const diaryBtn = document.getElementById('view-diary-from-detail');
+    if (diaryBtn) {
+        if (diaryData[dateStr] && diaryData[dateStr].content) {
+            diaryBtn.style.display = 'flex';
+        } else {
+            diaryBtn.style.display = 'none';
+        }
+    }
 
     detail.classList.remove('hidden');
 }
