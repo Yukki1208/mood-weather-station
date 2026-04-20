@@ -155,24 +155,24 @@ const moodConfig = {
 
 const musicConfig = {
     happy: {
-        name: "周杰伦 - 晴天",
-        url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"
+        name: "晴天",
+        url: "https://cdn.pixabay.com/audio/2022/03/15/audio_1ec46ab4b4.mp3"
     },
     calm: {
-        name: "赵雷 - 鼓楼",
-        url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3"
+        name: "宁静",
+        url: "https://cdn.pixabay.com/audio/2022/10/25/audio_1ad3e9b687.mp3"
     },
     melancholy: {
-        name: "莫文蔚 - 阴天",
-        url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3"
+        name: "沉思",
+        url: "https://cdn.pixabay.com/audio/2024/02/14/audio_1c7b5f1fa6.mp3"
     },
     sad: {
-        name: "孙燕姿 - 雨天",
-        url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3"
+        name: "雨天",
+        url: "https://cdn.pixabay.com/audio/2022/05/16/audio_1e6d98c4ba.mp3"
     },
     sorrow: {
-        name: "陈奕迅 - 富士山下",
-        url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-5.mp3"
+        name: "忧愁",
+        url: "https://cdn.pixabay.com/audio/2022/08/02/audio_884fe92c21.mp3"
     }
 };
 
