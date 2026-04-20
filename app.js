@@ -741,12 +741,12 @@ function showDiaryOnly(dateStr) {
     messageEl.textContent = diaryData[dateStr]?.content || '（暂无内容）';
 
     const diaryBtn = document.getElementById('view-diary-from-detail');
-    if (diaryBtn) diaryBtn.style.display = 'none';
+    if (diaryBtn) diaryBtn.style.display = diaryData[dateStr]?.content ? 'flex' : 'none';
 
     detail.classList.remove('hidden');
 }
 
-function showDayDetailWithDiary(dateStr, mood, message) {
+function showDayDetail(dateStr, mood, message) {
     currentDetailDate = dateStr;
     const detail = document.getElementById('day-detail');
     const moodEl = document.getElementById('detail-mood');
