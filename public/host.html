@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>主持人控制台 - 匿名问答</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+      min-height: 100vh;
+      color: #f8fafc;
+    }
+
+    .header {
+      background: rgba(30, 41, 59, 0.8);
+      backdrop-filter: blur(10px);
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #334155;
+    }
+
+    .logo {
+      font-size: 1.5rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .room-info {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .room-code {
+      background: #1e293b;
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      font-family: monospace;
+      font-size: 1.5rem;
+      letter-spacing: 0.2em;
+      color: #22c55e;
+      border: 2px solid #22c55e;
+    }
+
+    .btn {
+      padding: 0.5rem 1rem;
+      font-size: 0.9rem;
+      font-weight: 600;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .btn-danger {
+      background: #ef4444;
+      color: white;
+    }
+
+    .btn-danger:hover {
+      background: #dc2626;
+    }
+
+    .main {
+      display: grid;
+      grid-template-columns: 350px 1fr;
+      gap: 0;
+      height: calc(100vh - 70px);
+    }
+
+    .sidebar {
+      background: rgba(30, 41, 59, 0.6);
+      padding: 1.5rem;
+      border-right: 1px solid #334155;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .sidebar h3 {
+      font-size: 1rem;
+      color: #94a3b8;
+      margin-bottom: 1rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .stat-card {
+      background: #1e293b;
+      padding: 1rem;
+      border-radius: 12px;
+      text-align: center;
+    }
+
+    .stat-value {
+      font-size: 2rem;
+      font-weight: 700;
+      color: #6366f1;
+    }
+
+    .stat-label {
+      font-size: 0.8rem;
+      color: #94a3b8;
+      margin-top: 0.25rem;
+    }
+
+    .room-link {
+      background: #1e293b;
+      padding: 1rem;
+      border-radius: 12px;
+      margin-bottom: 1rem;
+    }
+
+    .room-link p {
+      font-size: 0.85rem;
+      color: #94a3b8;
+      margin-bottom: 0.5rem;
+    }
+
+    .controls {
+      margin-top: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .message-area {
+      padding: 1.5rem;
+      overflow-y: auto;
+    }
+
+    .message-area h3 {
+      font-size: 1rem;
+      color: #94a3b8;
+      margin-bottom: 1rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+
+    .messages {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .message {
+      background: #1e293b;
+      padding: 1rem;
+      border-radius: 12px;
+      border-left: 4px solid #6366f1;
+      animation: slideIn 0.3s ease;
+    }
+
+    .message.pinned {
+      border-left-color: #22c55e;
+      background: rgba(34, 197, 94, 0.1);
+    }
+
+    .message-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.5rem;
+    }
+
+    .message-time {
+      font-size: 0.75rem;
+      color: #64748b;
+    }
+
+    .message-actions {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .msg-btn {
+      padding: 0.25rem 0.5rem;
+      font-size: 0.75rem;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .msg-btn-pin {
+      background: #334155;
+      color: #94a3b8;
+    }
+
+    .msg-btn-pin:hover {
+      background: #22c55e;
+      color: white;
+    }
+
+    .msg-btn-pin.active {
+      background: #22c55e;
+      color: white;
+    }
+
+    .msg-btn-delete {
+      background: #334155;
+      color: #94a3b8;
+    }
+
+    .msg-btn-delete:hover {
+      background: #ef4444;
+      color: white;
+    }
+
+    .message-content {
+      font-size: 1rem;
+      line-height: 1.5;
+      word-break: break-word;
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateX(-20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 3rem;
+      color: #64748b;
+    }
+
+    .empty-state-icon {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+    }
+
+    @media (max-width: 768px) {
+      .main {
+        grid-template-columns: 1fr;
+      }
+
+      .sidebar {
+        border-right: none;
+        border-bottom: 1px solid #334155;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="logo">💬 匿名问答</div>
+    <div class="room-info">
+      <div class="room-code" id="roomCode">------</div>
+      <button class="btn btn-danger" onclick="closeRoom()">结束问答</button>
+    </div>
+  </header>
+
+  <main class="main">
+    <aside class="sidebar">
+      <h3>实时统计</h3>
+      <div class="stats">
+        <div class="stat-card">
+          <div class="stat-value" id="messageCount">0</div>
+          <div class="stat-label">消息数</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="participantCount">1</div>
+          <div class="stat-label">参与人数</div>
+        </div>
+      </div>
+
+      <div class="room-link">
+        <p>邀请链接（复制给参与者）:</p>
+        <div style="word-break: break-all; font-size: 0.85rem; color: #8b5cf6;" id="inviteLink"></div>
+      </div>
+
+      <h3>快速操作</h3>
+      <div class="controls">
+        <button class="btn btn-secondary" onclick="openDisplay()">打开展示模式</button>
+      </div>
+    </aside>
+
+    <section class="message-area">
+      <h3>收到的提问</h3>
+      <div class="messages" id="messages"></div>
+      <div class="empty-state" id="emptyState">
+        <div class="empty-state-icon">💭</div>
+        <p>暂无消息，等待参与者发言...</p>
+      </div>
+    </section>
+  </main>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const socket = io();
+    let roomId = '';
+    let messages = [];
+
+    function getRoomIdFromUrl() {
+      const params = new URLSearchParams(window.location.search);
+      return params.get('room');
+    }
+
+    function init() {
+      roomId = getRoomIdFromUrl();
+      if (!roomId) {
+        alert('无效的房间链接');
+        window.location.href = '/';
+        return;
+      }
+
+      document.getElementById('roomCode').textContent = roomId;
+      document.getElementById('inviteLink').textContent = `${window.location.origin}/participant.html#join/${roomId}`;
+
+      socket.emit('join-room', { roomId }, (response) => {
+        if (response.success) {
+          messages = response.room.messages || [];
+          updateMessagesUI();
+          updateStats(messages.length, 1);
+        }
+      });
+
+      socket.on('new-message', (message) => {
+        if (!messages.find(m => m.id === message.id)) {
+          messages.push(message);
+          addMessageToUI(message);
+          updateStats(messages.length, null);
+        }
+      });
+
+      socket.on('message-pinned', (message) => {
+        const idx = messages.findIndex(m => m.id === message.id);
+        if (idx !== -1) {
+          messages[idx] = message;
+          updateMessageInUI(message);
+        }
+      });
+
+      socket.on('message-deleted', (data) => {
+        messages = messages.filter(m => m.id !== data.messageId);
+        removeMessageFromUI(data.messageId);
+        updateStats(messages.length, null);
+      });
+
+      socket.on('room-closed', () => {
+        alert('房间已被主持人关闭');
+        window.location.href = '/';
+      });
+
+      socket.on('participant-update', (data) => {
+        updateStats(null, data.count);
+      });
+
+      socket.on('disconnect', () => {
+        console.log('Disconnected from server');
+      });
+    }
+
+    function addMessageToUI(message) {
+      const container = document.getElementById('messages');
+      const emptyState = document.getElementById('emptyState');
+      emptyState.style.display = 'none';
+
+      const msgEl = createMessageElement(message);
+      container.insertBefore(msgEl, container.firstChild);
+    }
+
+    function createMessageElement(message) {
+      const el = document.createElement('div');
+      el.className = 'message' + (message.isPinned ? ' pinned' : '');
+      el.id = 'msg-' + message.id;
+
+      const time = new Date(message.timestamp).toLocaleTimeString('zh-CN', {
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+
+      el.innerHTML = `
+        <div class="message-header">
+          <span class="message-time">${time}</span>
+          <div class="message-actions">
+            <button class="msg-btn msg-btn-pin ${message.isPinned ? 'active' : ''}" onclick="togglePin('${message.id}')">
+              ${message.isPinned ? '已置顶' : '置顶'}
+            </button>
+            <button class="msg-btn msg-btn-delete" onclick="deleteMessage('${message.id}')">删除</button>
+          </div>
+        </div>
+        <div class="message-content">${escapeHtml(message.content)}</div>
+      `;
+
+      return el;
+    }
+
+    function updateMessageInUI(message) {
+      const existingEl = document.getElementById('msg-' + message.id);
+      if (existingEl) {
+        const newEl = createMessageElement(message);
+        existingEl.replaceWith(newEl);
+      }
+    }
+
+    function removeMessageFromUI(messageId) {
+      const el = document.getElementById('msg-' + messageId);
+      if (el) {
+        el.remove();
+      }
+
+      if (messages.length === 0) {
+        document.getElementById('emptyState').style.display = 'block';
+      }
+    }
+
+    function updateMessagesUI() {
+      const container = document.getElementById('messages');
+      const emptyState = document.getElementById('emptyState');
+
+      container.innerHTML = '';
+
+      const pinned = messages.filter(m => m.isPinned);
+      const normal = messages.filter(m => !m.isPinned);
+
+      [...pinned, ...normal].forEach(msg => {
+        const el = createMessageElement(msg);
+        container.appendChild(el);
+      });
+
+      emptyState.style.display = messages.length === 0 ? 'block' : 'none';
+    }
+
+    function updateStats(messageCount, participantCount) {
+      if (messageCount !== null) {
+        document.getElementById('messageCount').textContent = messageCount;
+      }
+      if (participantCount !== null) {
+        document.getElementById('participantCount').textContent = participantCount;
+      }
+    }
+
+    function togglePin(messageId) {
+      socket.emit('pin-message', { roomId, messageId }, (response) => {
+        if (!response.success) {
+          alert('操作失败');
+        }
+      });
+    }
+
+    function deleteMessage(messageId) {
+      if (!confirm('确定要删除这条消息吗？')) return;
+
+      socket.emit('delete-message', { roomId, messageId }, (response) => {
+        if (!response.success) {
+          alert('删除失败');
+        }
+      });
+    }
+
+    function closeRoom() {
+      if (!confirm('确定要结束问答吗？所有参与者将被断开连接。')) return;
+
+      socket.emit('close-room', { roomId }, (response) => {
+        if (response.success) {
+          window.location.href = '/';
+        } else {
+          alert('关闭房间失败');
+        }
+      });
+    }
+
+    function openDisplay() {
+      window.open(`/display.html?room=${roomId}`, '_blank', 'width=1200,height=800');
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    init();
+  </script>
+</body>
+</html>
