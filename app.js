@@ -151,24 +151,24 @@ const moodConfig = {
 
 const musicConfig = {
     happy: {
-        name: "愉悦旋律",
-        url: "https://assets.mixkit.co/active_storage/sfx/2515/2515-preview.mp3"
+        name: "周杰伦 - 晴天",
+        url: "https://music.163.com/song/media/outer/url?id=186016.mp3"
     },
     calm: {
-        name: "舒缓白噪音",
-        url: "https://assets.mixkit.co/active_storage/sfx/3774/3774-preview.mp3"
+        name: "赵雷 - 鼓楼",
+        url: "https://music.163.com/song/media/outer/url?id=443474831.mp3"
     },
     melancholy: {
-        name: "沉思时光",
-        url: "https://assets.mixkit.co/active_storage/sfx/452/452-preview.mp3"
+        name: "莫文蔚 - 阴天",
+        url: "https://music.163.com/song/media/outer/url?id=340752.mp3"
     },
     sad: {
-        name: "忧郁雨声",
-        url: "https://assets.mixkit.co/active_storage/sfx/2394/2394-preview.mp3"
+        name: "孙燕姿 - 雨天",
+        url: "https://music.163.com/song/media/outer/url?id=3004265.mp3"
     },
     sorrow: {
-        name: "悲伤雨夜",
-        url: "https://assets.mixkit.co/active_storage/sfx/2391/2391-preview.mp3"
+        name: "陈奕迅 - 富士山下",
+        url: "https://music.163.com/song/media/outer/url?id=185075.mp3"
     }
 };
 
