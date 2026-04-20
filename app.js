@@ -156,23 +156,23 @@ const moodConfig = {
 const musicConfig = {
     happy: {
         name: "晴天",
-        url: "https://assets.mixkit.co/active_storage/sfx/2515/2515-preview.mp3"
+        url: "https://cdn.pixabay.com/download/audio/2022/03/15/audio_115b9b7e6c.mp3"
     },
     calm: {
-        name: "宁静",
-        url: "https://assets.mixkit.co/active_storage/sfx/3774/3774-preview.mp3"
+        name: "多云",
+        url: "https://cdn.pixabay.com/download/audio/2022/10/25/audio_9466b4b7c1.mp3"
     },
     melancholy: {
-        name: "沉思",
-        url: "https://assets.mixkit.co/active_storage/sfx/452/452-preview.mp3"
+        name: "阴天",
+        url: "https://cdn.pixabay.com/download/audio/2022/02/23/audio_c8c8a73467.mp3"
     },
     sad: {
         name: "雨天",
-        url: "https://assets.mixkit.co/active_storage/sfx/2394/2394-preview.mp3"
+        url: "https://cdn.pixabay.com/download/audio/2022/02/23/audio_c8c8a73467.mp3"
     },
     sorrow: {
-        name: "忧愁",
-        url: "https://assets.mixkit.co/active_storage/sfx/2391/2391-preview.mp3"
+        name: "雷暴",
+        url: "https://cdn.pixabay.com/download/audio/2022/03/01/audio_5b9c9f4e3a.mp3"
     }
 };
 
